@@ -1,0 +1,44 @@
+name: Validate static site
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Validate local resources and JavaScript syntax
+        run: |
+          python3 scripts/validate_site.py
+          node --check website/script.js
+
+      - name: Validate Compose configuration
+        run: docker compose config --quiet
+
+      - name: Start Apache
+        run: docker compose -p site-validation up -d
+
+      - name: Validate Apache configuration and HTTP delivery
+        run: |
+          docker compose -p site-validation exec -T apache httpd -t
+          python3 scripts/validate_site.py --base-url http://127.0.0.1
+
+      - name: Show Apache logs on failure
+        if: failure()
+        run: docker compose -p site-validation logs --no-color apache
+
+      - name: Stop validation environment
+        if: always()
+        run: docker compose -p site-validation down

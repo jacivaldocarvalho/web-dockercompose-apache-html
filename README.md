@@ -98,7 +98,24 @@ curl --fail --head http://localhost/
 
 In the browser, check that profile images and styles load, contact links work, and the back-to-top button appears after scrolling and returns the page to the top.
 
-There is currently no automated test suite or CI workflow. These commands describe manual validation and do not indicate a completed test run.
+### Automated Checks
+
+With Python 3.9+ and Node.js installed, run the checks from the repository root:
+
+```bash
+python3 scripts/validate_site.py
+node --check website/script.js
+```
+
+After starting Apache, verify HTTP status and exact content for the page and its referenced local images, stylesheets, favicon, and JavaScript:
+
+```bash
+python3 scripts/validate_site.py --base-url http://127.0.0.1
+```
+
+The validator uses the Python standard library and waits up to 30 seconds for the server to respond. External URLs are excluded; this is not a complete HTML, CSS, or accessibility audit.
+
+The [GitHub Actions workflow](.github/workflows/validate.yml) runs these checks, Compose validation, and an Apache configuration check on pushes to `main` and `develop`, and pull requests targeting `main`. It uses Python, Node.js, and Docker from the Ubuntu runner, displays Apache logs on failure, and always attempts to remove the validation container and network.
 
 ## Troubleshooting
 
