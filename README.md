@@ -10,7 +10,7 @@ A personal portfolio website served by Apache HTTP Server through Docker Compose
 
 ## Architecture
 
-The browser connects to Apache on host port `80`. A single container serves files mounted from `website/` into `/usr/local/apache2/htdocs`.
+The browser connects to Apache on host port `80`, bound to `127.0.0.1` for local access. A single container serves files mounted read-only from `website/` into `/usr/local/apache2/htdocs`.
 
 There is no backend, database, package installation, or application build step. Google Fonts and skill icons from jsDelivr are loaded by the browser and require internet access.
 
@@ -112,9 +112,9 @@ There is currently no automated test suite or CI workflow. These commands descri
 
 ## Current Limitations
 
-- The Apache image uses `httpd:latest`, so its version can change when pulled.
-- The website bind mount is writable from inside the container.
-- The port mapping does not restrict access to the loopback interface; access from other machines depends on the host network and firewall.
+- The Apache image uses `httpd:2.4.69`. The version tag can receive image updates; it is not pinned to an immutable digest. Review version updates explicitly.
+- The website bind mount is read-only inside the container; edit source files on the host.
+- Access is restricted to `127.0.0.1:80`. Access from other machines requires an explicit port-binding change.
 - TLS and production deployment configuration are not included.
 
 ## Contributing
